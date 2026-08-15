@@ -1,0 +1,2 @@
+# If true, game mode is also stored/swapped per world group, not just inventory-related state.
+sync-game-mode: false

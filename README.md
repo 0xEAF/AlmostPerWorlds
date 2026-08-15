@@ -1,29 +1,81 @@
-## PerWorlds – The best world data management plugin
+# AlmostPerWorlds
 
-PerWorlds is a modern and lightweight alternative to Multiverse-Inventories for **Paper** servers.  
-Create world groups and define custom rules that match your needs.
+A minimal, Folia-safe fork of [PerWorlds](https://github.com/TheNextLvl-net/per-worlds) that does
+exactly one thing: keeps each configured **world group** on its own inventory, ender chest, XP,
+food/health, and (optionally) game mode - so worlds managed by
+[Worlds](https://github.com/TheNextLvl-net/worlds) (or anything else) don't share a single
+inventory across the whole server.
 
-### Why Choose PerWorlds?
+## WARNING: Made with AI (cuz idk how to use Java)
+## PLEASE SUPPORT [THE ORIGINAL DEVELOPER](https://github.com/TheNextLvl-net)
 
-* **Compatibility** – PerWorlds is designed to work smoothly with existing plugins and APIs.
-* **Configurability** – Highly configurable, yet easy to use, and fast to set up.
-* **Versatility** – Sync pretty much everything on a group-specific basis.
-* **Data Integrity** – Safe data de/serialization for lossless version upgrades.
-* **Performance** – Light on performance with asynchronous data handling where possible.
+I am a random dev, and you should really not trust random stuff you find on the Internet. Take a look at the source code which is only a few hundred lines long. (click on the GitHub "view source" link on the side). And if you prefer, compile the project yourself with `mvn clean package` (requires Java JDK 21+ and Maven installed).
 
-### Options and Syncing
+## What's ported vs. what isn't
 
-Define which data is synced between groups:
+**Ported (player-scoped, safe on Folia):**
+- Inventory, armor, off-hand
+- Ender chest
+- XP / level
+- Food level, saturation, exhaustion
+- Health
+- Potion effects
+- Game mode - two independent, stackable options:
+  - `sync-game-mode` in `config.yml` (off by default): remembers each player's *own* last game
+    mode per group and restores it when they come back. Nothing is set the first time a player
+    enters a group.
+  - `/almostperworlds gamemode <group> <mode>`: force-sets *every* player to a fixed game mode
+    every time they enter that group (e.g. always Creative in your test world), overriding
+    whatever `sync-game-mode` would have restored. This is what you want for "world A is always
+    survival, world B is always creative."
 
-* Game modes
-* Time and weather
-* Inventories, Ender Chests, and stats
-* Attributes (health, speed, XP, etc.)
-* Chat behavior, tablist visibility, and more!
+**Deliberately dropped (world-scoped, unsafe on Folia / not needed since "Worlds" owns this):**
+- Time, weather, difficulty/hardcore, game rule, and world border syncing across a group's worlds
+- Chat/tablist per-group behavior
+- Multiverse-Inventories / MyWorlds importers
+- The `net.thenextlvl.*` command framework, i18n bundle, metrics, and version checker the
+  original plugin depended on - replaced with a plain `CommandExecutor`/`TabCompleter` and no
+  external runtime dependencies besides the Paper API itself, so this builds against nothing but
+  `paperweight.paperDevBundle(...)`.
 
----
+The dropped features all required reading or writing a **second world's** state synchronously
+from inside an event fired on a different world/region - that's the part that isn't safe on
+Folia's per-region threading model (and is exactly what the original author's commented-out
+`// foliaSupported = true` line was flagging). Everything kept here only ever touches the single
+player who triggered the event, dispatched through `Bukkit.getAsyncScheduler()` for file I/O and
+`player.getScheduler()` to apply the result - the standard Folia-safe pattern for entity-scoped
+work. It also runs fine on regular (non-Folia) Paper.
 
-[Download now](https://modrinth.com/project/lpfQmSV2)  
-For detailed setup and configurations, visit the [Wiki](https://thenextlvl.net/docs/perworlds).
+## Commands
 
-[![Usage](https://faststats.dev/embed/default:2f1f8c8c-b9b5-4ba8-9637-b1459b86292b:servers-and-players?w=1012)](https://faststats.dev/project/per-worlds)
+```
+/almostperworlds create <name>
+/almostperworlds delete <name>
+/almostperworlds addworld <group> <world>
+/almostperworlds removeworld <group> <world>
+/almostperworlds list
+/almostperworlds info <group>
+/almostperworlds gamemode <group> <survival|creative|adventure|spectator|clear>
+```
+(alias: `/apw`, permission: `almostperworlds.command.group`)
+
+Worlds not assigned to any group all share one implicit "default" bucket - same as vanilla,
+so nothing is lost for worlds you never group.
+
+## Building
+
+```
+./gradlew shadowJar
+```
+
+The output jar will be at `build/libs/almost-per-worlds-<version>-all.jar`.
+
+> # NOTE
+> Technically you could also use `./gradlew build` which generates `build/libs/almost-per-worlds-<version>.jar`,
+> which is the same as the `-all` version since Shadow isn't actually used in this project for now.
+
+## Install
+
+Requires [Worlds](https://github.com/TheNextLvl-net/worlds) (or your own world manager) to
+actually create the worlds - AlmostPerWorlds only groups worlds that already exist and are
+loaded when you run `addworld`.
