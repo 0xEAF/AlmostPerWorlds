@@ -6,6 +6,11 @@ food/health, and (optionally) game mode - so worlds managed by
 [Worlds](https://github.com/TheNextLvl-net/worlds) (or anything else) don't share a single
 inventory across the whole server.
 
+## WARNING: Made with AI (cuz idk how to use Java)
+## PLEASE SUPPORT [THE ORIGINAL DEVELOPER](https://github.com/TheNextLvl-net)
+
+I am a random dev, and you should really not trust random stuff you find on the Internet. Take a look at the source code which is only a few hundred lines long. (click on the GitHub "view source" link on the side). And if you prefer, compile the project yourself with `mvn clean package` (requires Java JDK 21+ and Maven installed).
+
 ## What's ported vs. what isn't
 
 **Ported (player-scoped, safe on Folia):**
@@ -65,12 +70,9 @@ so nothing is lost for worlds you never group.
 
 The output jar will be at `build/libs/almost-per-worlds-<version>-all.jar`.
 
-**Note:** this was written and reviewed against the same Paper/Folia scheduler APIs
-(`Bukkit.getAsyncScheduler()`, `Entity#getScheduler()`) already used elsewhere in the source
-project it was ported from, but it has **not** been compiled or run in this environment (no
-network/Gradle access here) - please build and smoke-test it against your own server jar before
-relying on it, and open an issue with the exact compiler error if anything doesn't line up with
-your Paper API version.
+> # NOTE
+> Technically you could also use `./gradlew build` which generates `build/libs/almost-per-worlds-<version>.jar`,
+> which is the same as the `-all` version since Shadow isn't actually used in this project for now.
 
 ## Install
 
