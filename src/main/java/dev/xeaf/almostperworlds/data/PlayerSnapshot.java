@@ -106,10 +106,10 @@ public final class PlayerSnapshot {
      */
     public void save(File file) {
         var config = new YamlConfiguration();
-        config.set("contents", List.of(contents));
-        config.set("armor", List.of(armor));
+        config.set("contents", java.util.Arrays.asList(contents));
+        config.set("armor", java.util.Arrays.asList(armor));
         config.set("off-hand", offHand);
-        config.set("ender-chest", List.of(enderChest));
+        config.set("ender-chest", java.util.Arrays.asList(enderChest));
         config.set("level", level);
         config.set("exp", exp);
         config.set("food-level", foodLevel);
